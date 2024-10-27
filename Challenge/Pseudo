@@ -1,1 +1,39 @@
+RunAll;
+  Driver (1)
+  Driver (2)
+  Driver (3)
 
+Driver (1)
+  --> function Driver(phantom_id "1")           
+            isHarmonic = 1
+            MotionFromIQ(phantom_id "1" , isHarmonic "1")   
+            [csROI1,csROI2] = CsMap(phantom_id "1" ,3,-1);
+                      ---> function [csROI1,csROI2] = CsMap(phantom_id "1" ,window_size "3" ,csROI2estimate "-1")
+                            clearvars -except phantom_id isUp window_size csROI2estimate
+                            dbstop if error;
+
+
+                            %% load data and correct for t size
+
+                            load(sprintf('HarmonicMotion%d.mat',phantom_id "1" ));
+                            vm = permute(vm,[3 2 1]);
+                            vm = [vm(1:end,:,:); vm(46:50,:,:)];
+                            vm = permute(vm,[2 3 1]);
+
+
+                            %% ********* REFINEMENT AFTER SUBMISSION
+
+                            nrefine = 20;
+                            vm = refineTime(vm,refine);
+
+                            % Squeeze t array for 1 to 50 sec
+                            % Refine in time similar to below
+                            % for ix = 1:nx
+                            %     xtdata(ix,:) = refineBasedOnFreq(xtdataOLD(ix,:),nrefine);
+                            % end
+
+
+                            %% Apply directional filter and pick the direction with more energy
+                    
+                            isUp = 1;
+                            vmUp = DirectionalFilter(vm,isUp,csROI2estimate,nrefine);
